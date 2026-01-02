@@ -2,103 +2,397 @@
 <html lang="zh-Hant">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no"
+    />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="theme-color" content="#fafafa" />
     <title>手搖日記</title>
     <style>
       :root {
-        --bg: #f2f2f7; --card: #fff; --text: #1c1c1e; --sub: #8e8e93;
-        --line: #e5e5ea; --brand: #007aff; --danger: #ff3b30;
-        --radius: 18px; --shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+        --bg: #f2f2f7;
+        --card: #fff;
+        --text: #1c1c1e;
+        --sub: #8e8e93;
+        --line: #e5e5ea;
+        --brand: #007aff;
+        --danger: #ff3b30;
+        --radius: 18px;
+        --shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
         --safe-bottom: env(safe-area-inset-bottom, 20px);
         --safe-top: env(safe-area-inset-top, 20px);
       }
-      * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-      body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: var(--bg); color: var(--text); height: 100vh; overflow-y: auto; }
-      input, button { font-family: inherit; }
+      * {
+        box-sizing: border-box;
+        -webkit-tap-highlight-color: transparent;
+      }
+      body {
+        margin: 0;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          Helvetica, Arial, sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        height: 100vh;
+        overflow-y: auto;
+      }
+      input,
+      button {
+        font-family: inherit;
+      }
 
       /* Header */
       header {
-        position: sticky; top: 0; z-index: 100;
-        background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-        border-bottom: 1px solid rgba(0, 0, 0, 0.1); padding: max(12px, var(--safe-top)) 16px 12px;
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        background: rgba(255, 255, 255, 0.85);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        padding: max(12px, var(--safe-top)) 16px 12px;
       }
-      .head-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
-      .app-name { font-size: 24px; font-weight: 800; letter-spacing: -0.5px; }
-      .icon-btn { background: none; border: none; color: var(--brand); font-size: 15px; font-weight: 600; padding: 8px; cursor: pointer; }
+      .head-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 12px;
+      }
+      .app-name {
+        font-size: 24px;
+        font-weight: 800;
+        letter-spacing: -0.5px;
+      }
+      .icon-btn {
+        background: none;
+        border: none;
+        color: var(--brand);
+        font-size: 15px;
+        font-weight: 600;
+        padding: 8px;
+        cursor: pointer;
+      }
 
       /* Segment Control */
-      .segment { background: #e3e3e8; padding: 2px; border-radius: 10px; display: flex; }
-      .segment button { flex: 1; border: none; background: none; padding: 6px; border-radius: 8px; font-size: 13px; font-weight: 600; color: var(--text); transition: all 0.2s; }
-      .segment button.active { background: #fff; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); }
+      .segment {
+        background: #e3e3e8;
+        padding: 2px;
+        border-radius: 10px;
+        display: flex;
+      }
+      .segment button {
+        flex: 1;
+        border: none;
+        background: none;
+        padding: 6px;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--text);
+        transition: all 0.2s;
+      }
+      .segment button.active {
+        background: #fff;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
 
       /* Main Content */
-      .wrap { max-width: 600px; margin: 0 auto; padding: 16px 16px 100px; }
+      .wrap {
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 16px 16px 100px;
+      }
 
       /* Stat Cards */
-      .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 24px; }
-      .stat-card { background: var(--card); padding: 16px; border-radius: var(--radius); box-shadow: var(--shadow); display: flex; flex-direction: column; }
-      .stat-label { font-size: 13px; color: var(--sub); font-weight: 600; margin-bottom: 4px; }
-      .stat-val { font-size: 26px; font-weight: 800; letter-spacing: -0.5px; }
-      .stat-unit { font-size: 14px; color: var(--sub); font-weight: 600; margin-left: 2px; }
+      .stats-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        margin-bottom: 24px;
+      }
+      .stat-card {
+        background: var(--card);
+        padding: 16px;
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        display: flex;
+        flex-direction: column;
+      }
+      .stat-label {
+        font-size: 13px;
+        color: var(--sub);
+        font-weight: 600;
+        margin-bottom: 4px;
+      }
+      .stat-val {
+        font-size: 26px;
+        font-weight: 800;
+        letter-spacing: -0.5px;
+      }
+      .stat-unit {
+        font-size: 14px;
+        color: var(--sub);
+        font-weight: 600;
+        margin-left: 2px;
+      }
 
       /* Section Headers */
-      h2 { font-size: 18px; margin: 24px 4px 12px; font-weight: 700; display: flex; justify-content: space-between; align-items: center; }
-      .link-btn { font-size: 14px; color: var(--brand); font-weight: 500; cursor: pointer; }
+      h2 {
+        font-size: 18px;
+        margin: 24px 4px 12px;
+        font-weight: 700;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .link-btn {
+        font-size: 14px;
+        color: var(--brand);
+        font-weight: 500;
+        cursor: pointer;
+      }
 
       /* List Items */
-      .list { display: flex; flex-direction: column; gap: 12px; }
-      .item { background: var(--card); padding: 16px; border-radius: var(--radius); box-shadow: var(--shadow); display: flex; justify-content: space-between; align-items: center; transition: transform 0.1s; cursor: pointer; }
-      .item:active { transform: scale(0.98); }
-      .item-main { display: flex; flex-direction: column; gap: 4px; }
-      .item-title { font-size: 16px; font-weight: 700; color: #000; }
-      .item-sub { font-size: 13px; color: var(--sub); }
-      .item-right { text-align: right; }
-      .item-price { font-size: 17px; font-weight: 700; color: var(--text); }
-      .item-tag { display: inline-block; background: #f2f2f7; color: var(--sub); font-size: 11px; padding: 2px 6px; border-radius: 6px; margin-top: 4px; font-weight: 600; }
-      
-      .empty-state { text-align: center; padding: 40px 0; color: var(--sub); font-size: 14px; border: 2px dashed #e5e5ea; border-radius: var(--radius); }
-      .loading-state { text-align: center; padding: 20px; color: var(--sub); font-size: 14px; }
+      .list {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+      .item {
+        background: var(--card);
+        padding: 16px;
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        transition: transform 0.1s;
+        cursor: pointer;
+      }
+      .item:active {
+        transform: scale(0.98);
+      }
+      .item-main {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+      .item-title {
+        font-size: 16px;
+        font-weight: 700;
+        color: #000;
+      }
+      .item-sub {
+        font-size: 13px;
+        color: var(--sub);
+      }
+      .item-right {
+        text-align: right;
+      }
+      .item-price {
+        font-size: 17px;
+        font-weight: 700;
+        color: var(--text);
+      }
+      .item-tag {
+        display: inline-block;
+        background: #f2f2f7;
+        color: var(--sub);
+        font-size: 11px;
+        padding: 2px 6px;
+        border-radius: 6px;
+        margin-top: 4px;
+        font-weight: 600;
+      }
+
+      .empty-state {
+        text-align: center;
+        padding: 40px 0;
+        color: var(--sub);
+        font-size: 14px;
+        border: 2px dashed #e5e5ea;
+        border-radius: var(--radius);
+      }
+      .loading-state {
+        text-align: center;
+        padding: 20px;
+        color: var(--sub);
+        font-size: 14px;
+      }
 
       /* FAB */
-      .fab { position: fixed; bottom: max(20px, var(--safe-bottom)); right: 20px; width: 56px; height: 56px; border-radius: 50%; background: var(--text); color: #fff; border: none; font-size: 28px; box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25); display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 90; transition: transform 0.2s; }
-      .fab:active { transform: scale(0.9); }
+      .fab {
+        position: fixed;
+        bottom: max(20px, var(--safe-bottom));
+        right: 20px;
+        width: 56px;
+        height: 56px;
+        border-radius: 50%;
+        background: var(--text);
+        color: #fff;
+        border: none;
+        font-size: 28px;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        z-index: 90;
+        transition: transform 0.2s;
+      }
+      .fab:active {
+        transform: scale(0.9);
+      }
 
       /* Modal / Sheet */
-      .overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.4); z-index: 200; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
-      .overlay.show { opacity: 1; pointer-events: auto; }
-      .sheet { position: fixed; bottom: 0; left: 0; right: 0; background: var(--card); border-radius: 24px 24px 0 0; z-index: 201; padding: 20px 20px max(20px, var(--safe-bottom)); transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); max-width: 600px; margin: 0 auto; }
-      .sheet.show { transform: translateY(0); }
-      .sheet-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-      .sheet-title { font-size: 20px; font-weight: 800; }
-      .close-btn { background: #f2f2f7; border: none; width: 32px; height: 32px; border-radius: 50%; color: #888; font-size: 18px; }
+      .overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.4);
+        z-index: 200;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.2s;
+      }
+      .overlay.show {
+        opacity: 1;
+        pointer-events: auto;
+      }
+      .sheet {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: var(--card);
+        border-radius: 24px 24px 0 0;
+        z-index: 201;
+        padding: 20px 20px max(20px, var(--safe-bottom));
+        transform: translateY(100%);
+        transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+        max-width: 600px;
+        margin: 0 auto;
+      }
+      .sheet.show {
+        transform: translateY(0);
+      }
+      .sheet-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+      }
+      .sheet-title {
+        font-size: 20px;
+        font-weight: 800;
+      }
+      .close-btn {
+        background: #f2f2f7;
+        border: none;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        color: #888;
+        font-size: 18px;
+      }
 
       /* Form */
-      .form-group { margin-bottom: 16px; }
-      .form-label { display: block; font-size: 12px; font-weight: 700; color: var(--sub); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
-      .form-input { width: 100%; padding: 14px; background: #f2f2f7; border: none; border-radius: 12px; font-size: 16px; color: var(--text); outline: none; }
-      .form-input:focus { background: #e3e3e8; }
-      .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-      .btn-submit { width: 100%; padding: 16px; background: var(--brand); color: #fff; border: none; border-radius: 14px; font-size: 16px; font-weight: 700; margin-top: 10px; cursor: pointer; }
-      .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; }
-      .btn-delete { width: 100%; padding: 14px; background: transparent; color: var(--danger); border: none; font-size: 14px; font-weight: 600; margin-top: 8px; cursor: pointer; }
+      .form-group {
+        margin-bottom: 16px;
+      }
+      .form-label {
+        display: block;
+        font-size: 12px;
+        font-weight: 700;
+        color: var(--sub);
+        margin-bottom: 6px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+      .form-input {
+        width: 100%;
+        padding: 14px;
+        background: #f2f2f7;
+        border: none;
+        border-radius: 12px;
+        font-size: 16px;
+        color: var(--text);
+        outline: none;
+      }
+      .form-input:focus {
+        background: #e3e3e8;
+      }
+      .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+      }
+      .btn-submit {
+        width: 100%;
+        padding: 16px;
+        background: var(--brand);
+        color: #fff;
+        border: none;
+        border-radius: 14px;
+        font-size: 16px;
+        font-weight: 700;
+        margin-top: 10px;
+        cursor: pointer;
+      }
+      .btn-submit:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+      .btn-delete {
+        width: 100%;
+        padding: 14px;
+        background: transparent;
+        color: var(--danger);
+        border: none;
+        font-size: 14px;
+        font-weight: 600;
+        margin-top: 8px;
+        cursor: pointer;
+      }
 
       /* Chips */
-      .chips { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; margin-bottom: 8px; -webkit-overflow-scrolling: touch; }
-      .chip { white-space: nowrap; padding: 6px 12px; background: #f0f0f5; border: 1px solid #e0e0e5; border-radius: 20px; font-size: 13px; color: var(--text); font-weight: 500; flex-shrink: 0; cursor: pointer; }
-      .chip:active { background: #e0e0eb; }
+      .chips {
+        display: flex;
+        gap: 8px;
+        overflow-x: auto;
+        padding-bottom: 4px;
+        margin-bottom: 8px;
+        -webkit-overflow-scrolling: touch;
+      }
+      .chip {
+        white-space: nowrap;
+        padding: 6px 12px;
+        background: #f0f0f5;
+        border: 1px solid #e0e0e5;
+        border-radius: 20px;
+        font-size: 13px;
+        color: var(--text);
+        font-weight: 500;
+        flex-shrink: 0;
+        cursor: pointer;
+      }
+      .chip:active {
+        background: #e0e0eb;
+      }
     </style>
   </head>
   <body>
     <header>
       <div class="head-top">
-        <div class="app-name"> 手搖紀錄 </div>
-        <button class="icon-btn" id="btnSync" onclick="syncData()">🔄 同步</button>
+        <div class="app-name">手搖日記</div>
+        <button class="icon-btn" id="btnSync" onclick="syncData()">
+          🔄 同步
+        </button>
       </div>
       <div class="segment">
-        <button class="active" onclick="setRange('week')" id="tab-week">本週</button>
+        <button class="active" onclick="setRange('week')" id="tab-week">
+          本週
+        </button>
         <button onclick="setRange('month')" id="tab-month">本月</button>
         <button onclick="setRange('all')" id="tab-all">全部</button>
       </div>
@@ -108,31 +402,43 @@
       <div class="stats-grid">
         <div class="stat-card">
           <div class="stat-label">累積杯數</div>
-          <div class="stat-val"><span id="valCups">0</span><span class="stat-unit">杯</span></div>
+          <div class="stat-val">
+            <span id="valCups">0</span><span class="stat-unit">杯</span>
+          </div>
         </div>
         <div class="stat-card">
           <div class="stat-label">總花費</div>
-          <div class="stat-val" style="color: var(--brand)" id="valSpend">$0</div>
+          <div class="stat-val" style="color: var(--brand)" id="valSpend">
+            $0
+          </div>
         </div>
       </div>
 
       <h2>
         店家排行榜
-        <span class="link-btn" onclick="toggleSort()" id="sortHint">依金額</span>
+        <span class="link-btn" onclick="toggleSort()" id="sortHint"
+          >依金額</span
+        >
       </h2>
       <div id="listStores" class="list"></div>
-      <div id="emptyStores" class="empty-state" style="display: none">暫無數據</div>
+      <div id="emptyStores" class="empty-state" style="display: none">
+        暫無數據
+      </div>
 
       <h2>近期紀錄</h2>
-      <div id="loadingState" class="loading-state" style="display:none">☁️ 正在連線到 Google Sheet...</div>
-      
+      <div id="loadingState" class="loading-state" style="display: none">
+        ☁️ 正在連線到 Google Sheet...
+      </div>
+
       <div id="listRecords" class="list"></div>
-      <div id="emptyRecords" class="empty-state" style="display: none">點擊右下角 + 開始記錄</div>
+      <div id="emptyRecords" class="empty-state" style="display: none">
+        點擊右下角 + 開始記錄
+      </div>
     </main>
 
     <button class="fab" id="fab">+</button>
     <div class="overlay" id="overlay"></div>
-    
+
     <div class="sheet" id="sheet">
       <div class="sheet-head">
         <div class="sheet-title" id="sheetTitle">新增紀錄</div>
@@ -143,19 +449,38 @@
         <div class="form-group">
           <label class="form-label">店家</label>
           <div class="chips" id="storeChips"></div>
-          <input class="form-input" id="inpStore" placeholder="輸入店家名稱 (如: 50嵐)" required autocomplete="off" />
+          <input
+            class="form-input"
+            id="inpStore"
+            placeholder="輸入店家名稱 (如: 50嵐)"
+            required
+            autocomplete="off"
+          />
         </div>
 
         <div class="form-group">
           <label class="form-label">飲料</label>
           <div class="chips" id="drinkChips" style="display: none"></div>
-          <input class="form-input" id="inpDrink" placeholder="輸入飲料名稱 (如: 1號)" required autocomplete="off" />
+          <input
+            class="form-input"
+            id="inpDrink"
+            placeholder="輸入飲料名稱 (如: 1號)"
+            required
+            autocomplete="off"
+          />
         </div>
 
         <div class="form-row">
           <div class="form-group">
             <label class="form-label">價格</label>
-            <input type="number" inputmode="numeric" class="form-input" id="inpPrice" placeholder="$$" required />
+            <input
+              type="number"
+              inputmode="numeric"
+              class="form-input"
+              id="inpPrice"
+              placeholder="$$"
+              required
+            />
           </div>
           <div class="form-group">
             <label class="form-label">日期</label>
@@ -163,8 +488,17 @@
           </div>
         </div>
 
-        <button type="submit" class="btn-submit" id="btnSubmit">儲存到雲端</button>
-        <button type="button" class="btn-delete" id="btnDelete" style="display: none">刪除此筆</button>
+        <button type="submit" class="btn-submit" id="btnSubmit">
+          儲存到雲端
+        </button>
+        <button
+          type="button"
+          class="btn-delete"
+          id="btnDelete"
+          style="display: none"
+        >
+          刪除此筆
+        </button>
       </form>
     </div>
 
@@ -173,7 +507,8 @@
       // 1. 設定與變數
       // ==========================================
       // ⚠️ 這是你的 Google Apps Script 網址
-      const API_URL = "https://script.google.com/macros/s/AKfycbyo2Pciqv4E-1_-ra35QhSOyE0GDiadCRx8VVyMT-sXp-QI0thTnd8ENGbXeA2VJ40mxg/exec";
+      const API_URL =
+        "https://script.google.com/macros/s/AKfycbyo2Pciqv4E-1_-ra35QhSOyE0GDiadCRx8VVyMT-sXp-QI0thTnd8ENGbXeA2VJ40mxg/exec";
 
       let data = [];
       let viewRange = "week"; // week, month, all
@@ -211,7 +546,7 @@
             store: r[1],
             drink: r[2],
             price: Number(r[3]),
-            id: r[4] // Google Sheet 裡的 ID
+            id: r[4], // Google Sheet 裡的 ID
           }));
 
           render(); // 抓完資料後重新渲染畫面
@@ -231,7 +566,7 @@
       // ==========================================
       async function handleSubmit(e) {
         e.preventDefault();
-        
+
         const btn = $("#btnSubmit");
         const originalText = btn.innerText;
         btn.disabled = true;
@@ -285,7 +620,7 @@
             headers: { "Content-Type": "text/plain" },
             body: JSON.stringify({ action: "delete", id: editId }),
           });
-          
+
           alert("已刪除");
           closeSheet();
           syncData();
@@ -309,14 +644,16 @@
         // 2. 紀錄列表
         const list = $("#listRecords");
         list.innerHTML = "";
-        
+
         if (subData.length === 0) {
           $("#emptyRecords").style.display = "block";
         } else {
           $("#emptyRecords").style.display = "none";
           // 排序：日期新的在上面
-          const sorted = [...subData].sort((a, b) => new Date(b.date) - new Date(a.date));
-          
+          const sorted = [...subData].sort(
+            (a, b) => new Date(b.date) - new Date(a.date)
+          );
+
           sorted.forEach((item) => {
             const div = document.createElement("div");
             div.className = "item";
@@ -328,7 +665,9 @@
               </div>
               <div class="item-right">
                 <div class="item-price">${fmtMoney(item.price)}</div>
-                <div class="item-tag">${item.date.slice(5).replace("-", "/")}</div>
+                <div class="item-tag">${item.date
+                  .slice(5)
+                  .replace("-", "/")}</div>
               </div>
             `;
             list.appendChild(div);
@@ -338,14 +677,17 @@
         // 3. 店家排行榜
         const storeMap = {};
         subData.forEach((i) => {
-          if (!storeMap[i.store]) storeMap[i.store] = { name: i.store, cups: 0, spend: 0 };
+          if (!storeMap[i.store])
+            storeMap[i.store] = { name: i.store, cups: 0, spend: 0 };
           storeMap[i.store].cups += 1;
           storeMap[i.store].spend += Number(i.price);
         });
         let stores = Object.values(storeMap);
 
         // 排序邏輯
-        stores.sort((a, b) => sortMode === "spend" ? b.spend - a.spend : b.cups - a.cups);
+        stores.sort((a, b) =>
+          sortMode === "spend" ? b.spend - a.spend : b.cups - a.cups
+        );
 
         const storeList = $("#listStores");
         storeList.innerHTML = "";
@@ -375,7 +717,7 @@
       // 5. 輔助功能
       // ==========================================
       const fmtMoney = (n) => `$${n}`;
-      
+
       const getStartOfWeek = () => {
         const d = new Date();
         const day = d.getDay() || 7;
@@ -383,7 +725,7 @@
         d.setDate(d.getDate() - day + 1);
         return d;
       };
-      
+
       const getStartOfMonth = () => {
         const d = new Date();
         d.setHours(0, 0, 0, 0);
@@ -398,12 +740,12 @@
         if (viewRange === "month") limit = getStartOfMonth().getTime();
         return data.filter((d) => new Date(d.date).getTime() >= limit);
       }
-      
+
       function formatDate(dateVal) {
-        if(!dateVal) return "";
+        if (!dateVal) return "";
         const d = new Date(dateVal);
         const offset = d.getTimezoneOffset() * 60000;
-        return (new Date(d - offset)).toISOString().slice(0, 10);
+        return new Date(d - offset).toISOString().slice(0, 10);
       }
 
       function setRange(r) {
@@ -462,7 +804,9 @@
       function renderStoreSuggestions() {
         const count = {};
         data.forEach((x) => (count[x.store] = (count[x.store] || 0) + 1));
-        const topStores = Object.keys(count).sort((a, b) => count[b] - count[a]).slice(0, 5);
+        const topStores = Object.keys(count)
+          .sort((a, b) => count[b] - count[a])
+          .slice(0, 5);
 
         const box = $("#storeChips");
         box.innerHTML = "";
@@ -479,10 +823,14 @@
       }
 
       function renderDrinkSuggestions(storeName) {
-        const drinks = data.filter((x) => x.store === storeName).map((x) => x.drink);
+        const drinks = data
+          .filter((x) => x.store === storeName)
+          .map((x) => x.drink);
         const count = {};
         drinks.forEach((d) => (count[d] = (count[d] || 0) + 1));
-        const topDrinks = Object.keys(count).sort((a, b) => count[b] - count[a]).slice(0, 5);
+        const topDrinks = Object.keys(count)
+          .sort((a, b) => count[b] - count[a])
+          .slice(0, 5);
 
         const box = $("#drinkChips");
         if (topDrinks.length > 0) {
@@ -495,7 +843,9 @@
             chip.onclick = () => {
               $("#inpDrink").value = d;
               // 自動帶入上次價格
-              const last = data.find((x) => x.store === storeName && x.drink === d);
+              const last = data.find(
+                (x) => x.store === storeName && x.drink === d
+              );
               if (last) $("#inpPrice").value = last.price;
             };
             box.appendChild(chip);
@@ -523,6 +873,7 @@
     </script>
   </body>
 </html>
+
 
 
 
