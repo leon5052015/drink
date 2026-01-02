@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no"
+    />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="theme-color" content="#fafafa" />
+    <title>手搖飲日記</title>
+    <style>
+      :root {
+        --bg: #f2f2f7;
+        --card: #fff;
+        --text: #1c1c1e;
+        --sub: #8e8e93;
+        --line: #e5e5ea;
+        --brand: #007aff;
+        --danger: #ff3b30;
+        --radius: 18px;
+        --shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+        --safe-bottom: env(safe-area-inset-bottom, 20px);
+        --safe-top: env(safe-area-inset-top, 20px);
+      }
+      * {
+        box-sizing: border-box;
+        -webkit-tap-highlight-color: transparent;
+      }
+      body {
+        margin: 0;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          Helvetica, Arial, sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        height: 100vh;
+        overflow-y: auto;
+      }
+      input,
+      button {
+        font-family: inherit;
+      }
+
+      /* Header */
+      header {
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        background: rgba(255, 255, 255, 0.85);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        padding: max(12px, var(--safe-top)) 16px 12px;
+      }
+      .head-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 12px;
+      }
+      .app-name {
+        font-size: 24px;
+        font-weight: 800;
+        letter-spacing: -0.5px;
+      }
+      .icon-btn {
+        background: none;
+        border: none;
+        color: var(--brand);
+        font-size: 15px;
+        font-weight: 600;
+        padding: 8px;
+        cursor: pointer;
+      }
+
+      /* Segment Control */
+      .segment {
+        background: #e3e3e8;
+        padding: 2px;
+        border-radius: 10px;
+        display: flex;
+      }
+      .segment button {
+        flex: 1;
+        border: none;
+        background: none;
+        padding: 6px;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--text);
+        transition: all 0.2s;
+      }
+      .segment button.active {
+        background: #fff;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+
+      /* Main Content */
+      .wrap {
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 16px 16px 100px;
+      }
+
+      /* Stat Cards */
+      .stats-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        margin-bottom: 24px;
+      }
+      .stat-card {
+        background: var(--card);
+        padding: 16px;
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        display: flex;
+        flex-direction: column;
+      }
+      .stat-label {
+        font-size: 13px;
+        color: var(--sub);
+        font-weight: 600;
+        margin-bottom: 4px;
+      }
+      .stat-val {
+        font-size: 26px;
+        font-weight: 800;
+        letter-spacing: -0.5px;
+      }
+      .stat-unit {
+        font-size: 14px;
+        color: var(--sub);
+        font-weight: 600;
+        margin-left: 2px;
+      }
+
+      /* Section Headers */
+      h2 {
+        font-size: 18px;
+        margin: 24px 4px 12px;
+        font-weight: 700;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .link-btn {
+        font-size: 14px;
+        color: var(--brand);
+        font-weight: 500;
+        cursor: pointer;
+      }
+
+      /* List Items */
+      .list {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+      .item {
+        background: var(--card);
+        padding: 16px;
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        transition: transform 0.1s;
+        cursor: pointer;
+      }
+      .item:active {
+        transform: scale(0.98);
+      }
+      .item-main {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+      .item-title {
+        font-size: 16px;
+        font-weight: 700;
+        color: #000;
+      }
+      .item-sub {
+        font-size: 13px;
+        color: var(--sub);
+      }
+      .item-right {
+        text-align: right;
+      }
+      .item-price {
+        font-size: 17px;
+        font-weight: 700;
+        color: var(--text);
+      }
+      .item-tag {
+        display: inline-block;
+        background: #f2f2f7;
+        color: var(--sub);
+        font-size: 11px;
+        padding: 2px 6px;
+        border-radius: 6px;
+        margin-top: 4px;
+        font-weight: 600;
+      }
+      .empty-state {
+        text-align: center;
+        padding: 40px 0;
+        color: var(--sub);
+        font-size: 14px;
+        border: 2px dashed #e5e5ea;
+        border-radius: var(--radius);
+      }
+
+      /* FAB */
+      .fab {
+        position: fixed;
+        bottom: max(20px, var(--safe-bottom));
+        right: 20px;
+        width: 56px;
+        height: 56px;
+        border-radius: 50%;
+        background: var(--text);
+        color: #fff;
+        border: none;
+        font-size: 28px;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        z-index: 90;
+        transition: transform 0.2s;
+      }
+      .fab:active {
+        transform: scale(0.9);
+      }
+
+      /* Modal / Sheet */
+      .overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.4);
+        z-index: 200;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.2s;
+      }
+      .overlay.show {
+        opacity: 1;
+        pointer-events: auto;
+      }
+      .sheet {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: var(--card);
+        border-radius: 24px 24px 0 0;
+        z-index: 201;
+        padding: 20px 20px max(20px, var(--safe-bottom));
+        transform: translateY(100%);
+        transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+        max-width: 600px;
+        margin: 0 auto;
+      }
+      .sheet.show {
+        transform: translateY(0);
+      }
+      .sheet-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+      }
+      .sheet-title {
+        font-size: 20px;
+        font-weight: 800;
+      }
+      .close-btn {
+        background: #f2f2f7;
+        border: none;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        color: #888;
+        font-size: 18px;
+      }
+
+      /* Form */
+      .form-group {
+        margin-bottom: 16px;
+      }
+      .form-label {
+        display: block;
+        font-size: 12px;
+        font-weight: 700;
+        color: var(--sub);
+        margin-bottom: 6px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+      .form-input {
+        width: 100%;
+        padding: 14px;
+        background: #f2f2f7;
+        border: none;
+        border-radius: 12px;
+        font-size: 16px;
+        color: var(--text);
+        outline: none;
+      }
+      .form-input:focus {
+        background: #e3e3e8;
+      }
+      .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+      }
+      .btn-submit {
+        width: 100%;
+        padding: 16px;
+        background: var(--brand);
+        color: #fff;
+        border: none;
+        border-radius: 14px;
+        font-size: 16px;
+        font-weight: 700;
+        margin-top: 10px;
+      }
+      .btn-delete {
+        width: 100%;
+        padding: 14px;
+        background: transparent;
+        color: var(--danger);
+        border: none;
+        font-size: 14px;
+        font-weight: 600;
+        margin-top: 8px;
+      }
+
+      /* Quick Suggestions Chips */
+      .chips {
+        display: flex;
+        gap: 8px;
+        overflow-x: auto;
+        padding-bottom: 4px;
+        margin-bottom: 8px;
+        -webkit-overflow-scrolling: touch;
+      }
+      .chip {
+        white-space: nowrap;
+        padding: 6px 12px;
+        background: #f0f0f5;
+        border: 1px solid #e0e0e5;
+        border-radius: 20px;
+        font-size: 13px;
+        color: var(--text);
+        font-weight: 500;
+        flex-shrink: 0;
+      }
+      .chip:active {
+        background: #e0e0eb;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="head-top">
+        <div class="app-name">🧋 飲料日記</div>
+        <button class="icon-btn" id="btnTools">設定</button>
+      </div>
+      <div class="segment">
+        <button class="active" onclick="setRange('week')" id="tab-week">
+          本週
+        </button>
+        <button onclick="setRange('month')" id="tab-month">本月</button>
+        <button onclick="setRange('all')" id="tab-all">全部</button>
+      </div>
+    </header>
+
+    <main class="wrap">
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-label">累積杯數</div>
+          <div class="stat-val">
+            <span id="valCups">0</span><span class="stat-unit">杯</span>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">總花費</div>
+          <div class="stat-val" style="color: var(--brand)" id="valSpend">
+            $0
+          </div>
+        </div>
+      </div>
+
+      <h2>
+        店家排行榜
+        <span class="link-btn" onclick="toggleSort()" id="sortHint"
+          >依金額</span
+        >
+      </h2>
+      <div id="listStores" class="list"></div>
+      <div id="emptyStores" class="empty-state" style="display: none">
+        暫無數據
+      </div>
+
+      <h2>近期紀錄</h2>
+      <div id="listRecords" class="list"></div>
+      <div id="emptyRecords" class="empty-state" style="display: none">
+        點擊右下角 + 開始記錄
+      </div>
+    </main>
+
+    <button class="fab" id="fab">+</button>
+
+    <div class="overlay" id="overlay"></div>
+    <div class="sheet" id="sheet">
+      <div class="sheet-head">
+        <div class="sheet-title" id="sheetTitle">新增紀錄</div>
+        <button class="close-btn" id="btnClose">×</button>
+      </div>
+
+      <form id="form">
+        <div class="form-group">
+          <label class="form-label">店家</label>
+          <div class="chips" id="storeChips"></div>
+          <input
+            class="form-input"
+            id="inpStore"
+            placeholder="輸入店家名稱 (如: 50嵐)"
+            required
+            autocomplete="off"
+          />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">飲料</label>
+          <div class="chips" id="drinkChips" style="display: none"></div>
+          <input
+            class="form-input"
+            id="inpDrink"
+            placeholder="輸入飲料名稱 (如: 1號)"
+            required
+            autocomplete="off"
+          />
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">價格</label>
+            <input
+              type="number"
+              inputmode="numeric"
+              class="form-input"
+              id="inpPrice"
+              placeholder="$$"
+              required
+            />
+          </div>
+          <div class="form-group">
+            <label class="form-label">日期</label>
+            <input type="date" class="form-input" id="inpDate" required />
+          </div>
+        </div>
+
+        <button type="submit" class="btn-submit">儲存紀錄</button>
+        <button
+          type="button"
+          class="btn-delete"
+          id="btnDelete"
+          style="display: none"
+        >
+          刪除此筆
+        </button>
+      </form>
+    </div>
+
+    <script>
+      // --- Data & State ---
+      const KEY = "bubble_tea_v3";
+      let data = [];
+      let viewRange = "week"; // week, month, all
+      let sortMode = "spend"; // spend, cups
+      let editId = null;
+
+      // --- Selectors ---
+      const $ = (s) => document.querySelector(s);
+      const $$ = (s) => document.querySelectorAll(s);
+
+      // --- Init ---
+      function init() {
+        try {
+          const raw = localStorage.getItem(KEY);
+          if (raw) data = JSON.parse(raw);
+        } catch (e) {
+          console.error(e);
+        }
+
+        // Default date
+        $("#inpDate").valueAsDate = new Date();
+        render();
+      }
+
+      // --- Core Logic ---
+      function saveRecord(r) {
+        if (r.id) {
+          const idx = data.findIndex((x) => x.id === r.id);
+          if (idx > -1) data[idx] = r;
+        } else {
+          r.id = Date.now().toString(36) + Math.random().toString(36).substr(2);
+          data.unshift(r);
+        }
+        persist();
+        render();
+        closeSheet();
+      }
+
+      function deleteRecord(id) {
+        if (!confirm("確定刪除？")) return;
+        data = data.filter((x) => x.id !== id);
+        persist();
+        render();
+        closeSheet();
+      }
+
+      function persist() {
+        localStorage.setItem(KEY, JSON.stringify(data));
+      }
+
+      // --- Helpers ---
+      const getStartOfWeek = () => {
+        const d = new Date();
+        const day = d.getDay() || 7;
+        d.setHours(0, 0, 0, 0);
+        d.setDate(d.getDate() - day + 1);
+        return d;
+      };
+      const getStartOfMonth = () => {
+        const d = new Date();
+        d.setHours(0, 0, 0, 0);
+        d.setDate(1);
+        return d;
+      };
+      const fmtMoney = (n) => `$${n}`;
+
+      function getFilteredData() {
+        const now = new Date();
+        let limit = 0;
+        if (viewRange === "week") limit = getStartOfWeek().getTime();
+        if (viewRange === "month") limit = getStartOfMonth().getTime();
+
+        return data.filter((d) => new Date(d.date).getTime() >= limit);
+      }
+
+      // --- Render ---
+      function render() {
+        const subData = getFilteredData();
+
+        // 1. Stats
+        const totalCups = subData.length;
+        const totalSpend = subData.reduce((a, b) => a + Number(b.price), 0);
+        $("#valCups").innerText = totalCups;
+        $("#valSpend").innerText = fmtMoney(totalSpend);
+
+        // 2. Records List
+        const list = $("#listRecords");
+        list.innerHTML = "";
+        if (subData.length === 0) $("#emptyRecords").style.display = "block";
+        else {
+          $("#emptyRecords").style.display = "none";
+          // Sort by date desc
+          const sorted = [...subData].sort(
+            (a, b) => new Date(b.date) - new Date(a.date)
+          );
+          sorted.forEach((item) => {
+            const div = document.createElement("div");
+            div.className = "item";
+            div.onclick = () => openSheet(item);
+            div.innerHTML = `
+            <div class="item-main">
+              <div class="item-title">${item.store}</div>
+              <div class="item-sub">${item.drink}</div>
+            </div>
+            <div class="item-right">
+              <div class="item-price">${fmtMoney(item.price)}</div>
+              <div class="item-tag">${item.date
+                .slice(5)
+                .replace("-", "/")}</div>
+            </div>
+          `;
+            list.appendChild(div);
+          });
+        }
+
+        // 3. Store Ranking
+        const storeMap = {};
+        subData.forEach((i) => {
+          if (!storeMap[i.store])
+            storeMap[i.store] = { name: i.store, cups: 0, spend: 0 };
+          storeMap[i.store].cups += 1;
+          storeMap[i.store].spend += Number(i.price);
+        });
+        let stores = Object.values(storeMap);
+
+        // Sort
+        stores.sort((a, b) =>
+          sortMode === "spend" ? b.spend - a.spend : b.cups - a.cups
+        );
+
+        const storeList = $("#listStores");
+        storeList.innerHTML = "";
+        if (stores.length === 0) $("#emptyStores").style.display = "block";
+        else {
+          $("#emptyStores").style.display = "none";
+          stores.forEach((s) => {
+            const div = document.createElement("div");
+            div.className = "item";
+            div.style.cursor = "default";
+            div.innerHTML = `
+            <div class="item-main">
+              <div class="item-title">${s.name}</div>
+              <div class="item-sub">${s.cups} 杯</div>
+            </div>
+            <div class="item-right">
+              <div class="item-price">${fmtMoney(s.spend)}</div>
+            </div>
+          `;
+            storeList.appendChild(div);
+          });
+        }
+      }
+
+      // --- UI Actions ---
+      function setRange(r) {
+        viewRange = r;
+        $$(".segment button").forEach((b) => b.classList.remove("active"));
+        $(`#tab-${r}`).classList.add("active");
+        render();
+      }
+
+      function toggleSort() {
+        sortMode = sortMode === "spend" ? "cups" : "spend";
+        $("#sortHint").innerText = sortMode === "spend" ? "依金額" : "依杯數";
+        render();
+      }
+
+      // --- Sheet & Suggestions ---
+      function openSheet(item = null) {
+        $("#overlay").classList.add("show");
+        $("#sheet").classList.add("show");
+
+        // Reset Suggestions
+        renderStoreSuggestions();
+        $("#drinkChips").style.display = "none";
+
+        if (item) {
+          editId = item.id;
+          $("#sheetTitle").innerText = "編輯紀錄";
+          $("#inpStore").value = item.store;
+          $("#inpDrink").value = item.drink;
+          $("#inpPrice").value = item.price;
+          $("#inpDate").value = item.date;
+          $("#btnDelete").style.display = "block";
+        } else {
+          editId = null;
+          $("#sheetTitle").innerText = "新增紀錄";
+          $("#inpStore").value = "";
+          $("#inpDrink").value = "";
+          $("#inpPrice").value = "";
+          $("#inpDate").valueAsDate = new Date();
+          $("#btnDelete").style.display = "none";
+          $("#inpStore").focus();
+        }
+      }
+
+      function closeSheet() {
+        $("#overlay").classList.remove("show");
+        $("#sheet").classList.remove("show");
+        $("#inpStore").blur();
+      }
+
+      // Suggestion Logic
+      function renderStoreSuggestions() {
+        // Find top 5 stores from all history
+        const count = {};
+        data.forEach((x) => (count[x.store] = (count[x.store] || 0) + 1));
+        const topStores = Object.keys(count)
+          .sort((a, b) => count[b] - count[a])
+          .slice(0, 5);
+
+        const box = $("#storeChips");
+        box.innerHTML = "";
+        topStores.forEach((s) => {
+          const chip = document.createElement("div");
+          chip.className = "chip";
+          chip.innerText = s;
+          chip.onclick = () => {
+            $("#inpStore").value = s;
+            renderDrinkSuggestions(s);
+          };
+          box.appendChild(chip);
+        });
+      }
+
+      function renderDrinkSuggestions(storeName) {
+        // Find top drinks for this store
+        const drinks = data
+          .filter((x) => x.store === storeName)
+          .map((x) => x.drink);
+        const count = {};
+        drinks.forEach((d) => (count[d] = (count[d] || 0) + 1));
+        const topDrinks = Object.keys(count)
+          .sort((a, b) => count[b] - count[a])
+          .slice(0, 5);
+
+        const box = $("#drinkChips");
+        if (topDrinks.length > 0) {
+          box.style.display = "flex";
+          box.innerHTML = "";
+          topDrinks.forEach((d) => {
+            const chip = document.createElement("div");
+            chip.className = "chip";
+            chip.innerText = d;
+            chip.onclick = () => {
+              $("#inpDrink").value = d;
+              // auto fill price if possible? (optional logic)
+              const last = data.find(
+                (x) => x.store === storeName && x.drink === d
+              );
+              if (last) $("#inpPrice").value = last.price;
+            };
+            box.appendChild(chip);
+          });
+        } else {
+          box.style.display = "none";
+        }
+      }
+
+      // Auto trigger drink suggestion when typing store?
+      // Simplified: only on chip click or blur for now to keep it clean.
+      $("#inpStore").addEventListener("blur", (e) => {
+        if (e.target.value) renderDrinkSuggestions(e.target.value);
+      });
+
+      // --- Events ---
+      $("#fab").onclick = () => openSheet();
+      $("#overlay").onclick = closeSheet;
+      $("#btnClose").onclick = closeSheet;
+
+      $("#form").onsubmit = (e) => {
+        e.preventDefault();
+        const record = {
+          id: editId,
+          store: $("#inpStore").value.trim(),
+          drink: $("#inpDrink").value.trim(),
+          price: $("#inpPrice").value,
+          date: $("#inpDate").value,
+        };
+        saveRecord(record);
+      };
+
+      $("#btnDelete").onclick = () => deleteRecord(editId);
+
+      // Tools
+      $("#btnTools").onclick = () => {
+        const act = prompt(
+          "1.匯出資料 (JSON)\n2.匯入資料 (JSON)\n3.清空資料\n請輸入數字:"
+        );
+        if (act === "1") {
+          navigator.clipboard.writeText(JSON.stringify(data));
+          alert("已複製 JSON 到剪貼簿");
+        } else if (act === "2") {
+          const json = prompt("請貼上 JSON");
+          if (json) {
+            try {
+              data = JSON.parse(json);
+              persist();
+              render();
+              alert("匯入成功");
+            } catch {
+              alert("格式錯誤");
+            }
+          }
+        } else if (act === "3") {
+          if (confirm("確定清空？")) {
+            data = [];
+            persist();
+            render();
+          }
+        }
+      };
+
+      init();
+    </script>
+  </body>
+</html>
