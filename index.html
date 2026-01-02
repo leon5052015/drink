@@ -1,667 +1,527 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="手搖記帳">
-  <link rel="apple-touch-icon" href="https://github.githubassets.com/favicons/favicon.png"> ```
-
-  <title>2026 手搖飲記帳</title>
-  <style>
-    :root {
-      --primary: #FF9F43; /* 溫暖的橘色，像珍珠奶茶 */
-      --bg: #F4F6F8;
-      --card: #FFFFFF;
-      --text: #333333;
-      --sub-text: #666666;
-      --danger: #EE5253;
-      --radius: 12px;
-    }
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      background-color: var(--bg);
-      color: var(--text);
-      margin: 0;
-      padding: 0;
-      -webkit-tap-highlight-color: transparent;
-    }
-    .container {
-      max-width: 600px;
-      margin: 0 auto;
-      padding: 20px;
-      padding-bottom: 80px; /* 預留底部按鈕空間 */
-    }
-    
-    /* 統計卡片 */
-    .stat-card {
-      background: var(--card);
-      border-radius: var(--radius);
-      padding: 20px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-      text-align: center;
-      margin-bottom: 20px;
-    }
-    .stat-total {
-      font-size: 3em;
-      font-weight: 800;
-      color: var(--primary);
-      line-height: 1;
-    }
-    .stat-label {
-      color: var(--sub-text);
-      font-size: 0.9em;
-      margin-top: 5px;
-    }
-    .stat-row {
-      display: flex;
-      justify-content: space-around;
-      margin-top: 15px;
-      border-top: 1px solid #eee;
-      padding-top: 15px;
-    }
-    .stat-item strong {
-      display: block;
-      font-size: 1.2em;
-    }
-    .stat-item span {
-      font-size: 0.8em;
-      color: var(--sub-text);
-    }
-
-    /* 篩選器 */
-    .filter-bar {
-      display: flex;
-      background: #e0e0e0;
-      border-radius: 8px;
-      padding: 4px;
-      margin-bottom: 20px;
-    }
-    .filter-btn {
-      flex: 1;
-      text-align: center;
-      padding: 8px;
-      font-size: 14px;
-      cursor: pointer;
-      border-radius: 6px;
-      color: var(--sub-text);
-      transition: 0.2s;
-    }
-    .filter-btn.active {
-      background: #fff;
-      color: var(--text);
-      font-weight: bold;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-    }
-
-    /* 列表區域 */
-    .list-header {
-      font-weight: bold;
-      margin-bottom: 10px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .record-list {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-    .record-item {
-      background: var(--card);
-      padding: 15px;
-      border-radius: var(--radius);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-    }
-    .item-left {
-      display: flex;
-      flex-direction: column;
-    }
-    .item-title {
-      font-weight: 600;
-      font-size: 1.1em;
-    }
-    .item-sub {
-      font-size: 0.85em;
-      color: var(--sub-text);
-      margin-top: 4px;
-    }
-    .item-right {
-      text-align: right;
-      font-weight: bold;
-      color: var(--primary);
-    }
-    .delete-btn {
-      color: var(--danger);
-      background: none;
-      border: none;
-      font-size: 0.8em;
-      margin-top: 5px;
-      cursor: pointer;
-      padding: 0;
-      text-align: right;
-    }
-
-    /* 新增按鈕 (FAB) */
-    .fab {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      width: 56px;
-      height: 56px;
-      background: var(--primary);
-      color: white;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 24px;
-      box-shadow: 0 4px 12px rgba(255, 159, 67, 0.4);
-      cursor: pointer;
-      z-index: 100;
-      transition: transform 0.2s;
-    }
-    .fab:active {
-      transform: scale(0.95);
-    }
-
-    /* 彈窗 Modal */
-    .modal-overlay {
-      position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(0,0,0,0.5);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      z-index: 200;
-      opacity: 0;
-      transition: opacity 0.3s;
-    }
-    .modal-overlay.show {
-      display: flex;
-      opacity: 1;
-    }
-    .modal {
-      background: var(--card);
-      width: 90%;
-      max-width: 400px;
-      padding: 25px;
-      border-radius: 16px;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-      transform: translateY(20px);
-      transition: transform 0.3s;
-    }
-    .modal-overlay.show .modal {
-      transform: translateY(0);
-    }
-    .modal h2 {
-      margin-top: 0;
-      margin-bottom: 20px;
-      text-align: center;
-    }
-    .form-group {
-      margin-bottom: 15px;
-    }
-    .form-group label {
-      display: block;
-      margin-bottom: 8px;
-      font-weight: 500;
-      font-size: 0.9em;
-      color: var(--sub-text);
-    }
-    .form-control {
-      width: 100%;
-      padding: 12px;
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      font-size: 16px;
-      box-sizing: border-box;
-      outline: none;
-    }
-    .form-control:focus {
-      border-color: var(--primary);
-    }
-    .btn-group {
-      display: flex;
-      gap: 10px;
-      margin-top: 25px;
-    }
-    .btn {
-      flex: 1;
-      padding: 12px;
-      border: none;
-      border-radius: 8px;
-      font-size: 16px;
-      font-weight: 600;
-      cursor: pointer;
-    }
-    .btn-primary {
-      background: var(--primary);
-      color: white;
-    }
-    .btn-secondary {
-      background: #eee;
-      color: #555;
-    }
-
-    /* 快選標籤 Chip */
-    .chips {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-top: 8px;
-    }
-    .chip {
-      background: #f0f0f0;
-      padding: 6px 12px;
-      border-radius: 20px;
-      font-size: 0.85em;
-      color: #555;
-      cursor: pointer;
-    }
-    .chip:active {
-      background: #e0e0e0;
-    }
-    
-    /* 設定區域 */
-    .settings-area {
-      margin-top: 30px;
-      padding-top: 20px;
-      border-top: 1px solid #eee;
-      text-align: center;
-    }
-    .btn-small {
-      background: #eee;
-      border: none;
-      padding: 5px 10px;
-      border-radius: 4px;
-      font-size: 12px;
-      cursor: pointer;
-      color: #666;
-      margin: 0 5px;
-    }
-
-  </style>
-</head>
-<body>
-
-<div class="container">
-  <div class="stat-card">
-    <div class="stat-total" id="totalCups">0</div>
-    <div class="stat-label">2026 累積杯數</div>
-    <div class="stat-row">
-      <div class="stat-item">
-        <strong id="totalSpend">$0</strong>
-        <span>總花費</span>
-      </div>
-      <div class="stat-item">
-        <strong id="avgPrice">$0</strong>
-        <span>平均單價</span>
-      </div>
-    </div>
-  </div>
-
-  <div class="filter-bar">
-    <div class="filter-btn active" onclick="setFilter('week')">本週</div>
-    <div class="filter-btn" onclick="setFilter('month')">本月</div>
-    <div class="filter-btn" onclick="setFilter('all')">全部</div>
-  </div>
-
-  <div class="list-header">
-    <span>近期紀錄</span>
-    <span style="font-size:0.8em; color:#888;" id="recordCount"></span>
-  </div>
-  <div class="record-list" id="recordList">
-    </div>
-  
-  <div class="settings-area">
-    <p style="font-size:0.8em; color:#999; margin-bottom:10px;">資料管理</p>
-    <button class="btn-small" onclick="exportData()">匯出備份</button>
-    <label class="btn-small" style="cursor:pointer">
-      匯入備份
-      <input type="file" id="importFile" style="display:none" onchange="importData(this)">
-    </label>
-    <button class="btn-small" style="color:var(--danger)" onclick="clearAllData()">清除所有資料</button>
-  </div>
-</div>
-
-<div class="fab" onclick="openModal()">+</div>
-
-<div class="modal-overlay" id="modal">
-  <div class="modal">
-    <h2>喝什麼呢？</h2>
-    
-    <div class="form-group">
-      <label>店家</label>
-      <input type="text" id="inpStore" class="form-control" placeholder="例如：50嵐">
-      <div class="chips" id="storeChips">
-        </div>
-    </div>
-
-    <div class="form-group">
-      <label>品項</label>
-      <input type="text" id="inpDrink" class="form-control" placeholder="例如：1號無糖少冰">
-      <div class="chips" id="drinkChips">
-        </div>
-    </div>
-
-    <div class="form-group">
-      <label>價格</label>
-      <input type="number" id="inpPrice" class="form-control" placeholder="60" inputmode="numeric">
-    </div>
-    
-    <div class="form-group">
-      <label>日期</label>
-      <input type="date" id="inpDate" class="form-control">
-    </div>
-
-    <div class="btn-group">
-      <button class="btn btn-secondary" onclick="closeModal()">取消</button>
-      <button class="btn btn-primary" onclick="saveRecord()">紀錄！</button>
-    </div>
-  </div>
-</div>
-
-<script>
-  // ==========================================
-  // 1. 初始化與全域變數
-  // ==========================================
-  const STORAGE_KEY = 'bubbleTeaRecords';
-  let data = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
-  let viewRange = 'week'; // 預設看本週 week | month | all
-
-  // 捷徑 helper
-  const $ = (s) => document.querySelector(s);
-  
-  // 安全性：防止 XSS 攻擊的 Helper (將特殊符號轉義)
-  const escapeHtml = (unsafe) => String(unsafe)
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
-
-  // 日期處理：轉為本地午夜時間 (解決時區偏移與 'all' 篩選問題)
-  const toLocalMidnight = (dateString) => {
-    // 建立一個日期物件
-    const d = new Date(dateString);
-    // 確保回到當地的 00:00:00，避免時區造成跨日誤差
-    // 這裡使用字串重組的方式最保險： 'YYYY-MM-DD' + 'T00:00:00'
-    return new Date(`${dateString}T00:00:00`);
-  };
-
-  // 取得今天日期字串 YYYY-MM-DD
-  const getTodayStr = () => {
-    const d = new Date();
-    // 修正時區偏移，確保取得台灣時間的日期字串
-    const offset = d.getTimezoneOffset() * 60000;
-    const localISOTime = (new Date(d - offset)).toISOString().slice(0, 10);
-    return localISOTime;
-  };
-
-  // 啟動時執行
-  init();
-
-  function init() {
-    renderUI();
-    renderChips();
-    // 預設日期填入今天
-    $('#inpDate').value = getTodayStr();
-  }
-
-  // ==========================================
-  // 2. 核心邏輯：篩選與統計
-  // ==========================================
-  function setFilter(range) {
-    viewRange = range;
-    // 更新按鈕樣式
-    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-    document.querySelectorAll('.filter-btn')[['week','month','all'].indexOf(range)].classList.add('active');
-    renderUI();
-  }
-
-  function getFilteredData() {
-    const now = new Date();
-    // 這裡也使用 toLocalMidnight 確保比較的基準點是乾淨的
-    let limitTime = 0; 
-
-    if (viewRange === 'week') {
-      // 取得本週一 (本地時間)
-      const day = now.getDay() || 7; // 週日是0，改成7
-      const d = new Date(now);
-      d.setDate(now.getDate() - day + 1);
-      const startOfWeekStr = d.toISOString().slice(0, 10);
-      limitTime = toLocalMidnight(startOfWeekStr).getTime();
-    } 
-    else if (viewRange === 'month') {
-      // 取得本月1號 (本地時間)
-      const startOfMonthStr = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().slice(0, 10); // 這裡稍微簡化，取前10碼
-       // 更精確的做法：
-      const y = now.getFullYear();
-      const m = String(now.getMonth() + 1).padStart(2, '0');
-      limitTime = toLocalMidnight(`${y}-${m}-01`).getTime();
-    }
-    // 'all' 的時候 limitTime 維持 0
-
-    return data.filter(d => toLocalMidnight(d.date).getTime() >= limitTime);
-  }
-
-  function renderUI() {
-    const subData = getFilteredData();
-    
-    // 排序：日期新的在上面
-    // 使用 toLocalMidnight 確保排序不受 UTC 影響
-    const sorted = [...subData].sort((a,b) => toLocalMidnight(b.date) - toLocalMidnight(a.date));
-
-    // 1. 更新統計數字
-    const totalCount = sorted.length;
-    // 價格現在是數字了，直接加總
-    const totalSpend = sorted.reduce((sum, d) => sum + d.price, 0); 
-    const avg = totalCount > 0 ? Math.round(totalSpend / totalCount) : 0;
-
-    $('#totalCups').innerText = totalCount;
-    $('#totalSpend').innerText = '$' + totalSpend;
-    $('#avgPrice').innerText = '$' + avg;
-    $('#recordCount').innerText = `(${totalCount} 筆)`;
-
-    // 2. 渲染列表
-    const listEl = $('#recordList');
-    listEl.innerHTML = '';
-    
-    if (totalCount === 0) {
-      listEl.innerHTML = '<div style="text-align:center; padding:20px; color:#aaa;">這區間還沒喝喔！</div>';
-      return;
-    }
-
-    sorted.forEach(item => {
-      const div = document.createElement('div');
-      div.className = 'record-item';
-      // 使用 escapeHtml 保護內容
-      div.innerHTML = `
-        <div class="item-left">
-          <div class="item-title">${escapeHtml(item.store)}</div>
-          <div class="item-sub">${escapeHtml(item.drink)} · ${item.date}</div>
-        </div>
-        <div class="item-right">
-          <div>$${item.price}</div>
-          <button class="delete-btn" onclick="deleteRecord(${item.id})">刪除</button>
-        </div>
-      `;
-      listEl.appendChild(div);
-    });
-  }
-
-  // ==========================================
-  // 3. 資料操作 (CRUD)
-  // ==========================================
-  function saveRecord() {
-    const store = $('#inpStore').value.trim();
-    const drink = $('#inpDrink').value.trim();
-    // 強制轉為數字，避免存成字串
-    const price = Number($('#inpPrice').value);
-    const date = $('#inpDate').value;
-
-    // 基本驗證
-    if(!store || !drink) {
-      alert('請輸入店家和品項');
-      return;
-    }
-    if(!price || price <= 0) {
-      alert('請輸入正確的金額');
-      return;
-    }
-    if(!date) {
-      alert('請選擇日期');
-      return;
-    }
-
-    const newRecord = {
-      id: Date.now(),
-      store,
-      drink,
-      price, // 這裡存入的保證是 Number
-      date
-    };
-
-    data.push(newRecord);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-    
-    closeModal();
-    renderUI();
-    renderChips(); // 更新常用清單
-    
-    // 清空輸入框但保留日期
-    $('#inpStore').value = '';
-    $('#inpDrink').value = '';
-    $('#inpPrice').value = '';
-  }
-
-  function deleteRecord(id) {
-    if(!confirm('確定要刪除這筆紀錄嗎？')) return;
-    data = data.filter(d => d.id !== id);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-    renderUI();
-  }
-
-  // ==========================================
-  // 4. 介面互動與 UX 優化
-  // ==========================================
-  function openModal() {
-    $('#modal').classList.add('show');
-    // 延遲一下讓動畫跑完再 focus
-    setTimeout(() => $('#inpStore').focus(), 100);
-  }
-
-  function closeModal() {
-    $('#modal').classList.remove('show');
-  }
-
-  // 點擊背景關閉
-  $('#modal').onclick = (e) => {
-    if(e.target.id === 'modal') closeModal();
-  };
-
-  // 自動產生常用店家/品項 Chips
-  function renderChips() {
-    // 簡單統計出現最多次的店家
-    const storeCounts = {};
-    data.forEach(d => { storeCounts[d.store] = (storeCounts[d.store]||0)+1; });
-    const topStores = Object.keys(storeCounts).sort((a,b) => storeCounts[b] - storeCounts[a]).slice(0, 5);
-
-    const storeChipsHtml = topStores.map(s => 
-      `<div class="chip" onclick="fillStore('${escapeHtml(s)}')">${escapeHtml(s)}</div>`
-    ).join('');
-    $('#storeChips').innerHTML = storeChipsHtml;
-  }
-
-  function fillStore(name) {
-    $('#inpStore').value = name;
-    
-    // UX 優化：點了店家後，自動列出該店喝過的飲料，並將焦點移到品項
-    const drankHere = data.filter(d => d.store === name);
-    const drinkCounts = {};
-    drankHere.forEach(d => { drinkCounts[d.drink] = (drinkCounts[d.drink]||0)+1; });
-    const topDrinks = Object.keys(drinkCounts).sort((a,b) => drinkCounts[b] - drinkCounts[a]).slice(0, 5);
-
-    const drinkChipsHtml = topDrinks.map(d => 
-      `<div class="chip" onclick="fillDrink('${escapeHtml(d)}')">${escapeHtml(d)}</div>`
-    ).join('');
-    $('#drinkChips').innerHTML = drinkChipsHtml;
-
-    // 自動聚焦下一欄
-    $('#inpDrink').focus();
-  }
-
-  function fillDrink(name) {
-    $('#inpDrink').value = name;
-    
-    // UX 優化：嘗試自動填入上次該品項的價格
-    const lastRecord = data.find(d => d.store === $('#inpStore').value && d.drink === name);
-    if(lastRecord) {
-      $('#inpPrice').value = lastRecord.price;
-    }
-    // 自動聚焦下一欄
-    $('#inpPrice').focus();
-  }
-
-  // ==========================================
-  // 5. 資料匯入匯出
-  // ==========================================
-  function exportData() {
-    const jsonStr = JSON.stringify(data, null, 2); // 美化格式，方便閱讀
-    const blob = new Blob([jsonStr], {type: "application/json"});
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `bubble_tea_backup_${getTodayStr()}.json`;
-    a.click();
-  }
-
-  function importData(input) {
-    const file = input.files[0];
-    if(!file) return;
-    
-    const reader = new FileReader();
-    reader.onload = function(e) {
-      try {
-        const imported = JSON.parse(e.target.result);
-        if(Array.isArray(imported)) {
-          if(confirm(`確定要匯入 ${imported.length} 筆資料嗎？(會覆蓋現有資料)`)) {
-            // 資料清洗：確保匯入的價格也是數字
-            data = imported.map(d => ({
-              ...d,
-              price: Number(d.price) || 0
-            }));
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-            renderUI();
-            alert('匯入成功！');
-          }
-        } else {
-          alert('格式錯誤：這不是一個紀錄列表');
-        }
-      } catch(err) {
-        alert('檔案讀取失敗，請確認是正確的 JSON 檔');
+<html lang="zh-Hant">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="theme-color" content="#fafafa" />
+    <title>手搖飲日記 (雲端同步版)</title>
+    <style>
+      :root {
+        --bg: #f2f2f7; --card: #fff; --text: #1c1c1e; --sub: #8e8e93;
+        --line: #e5e5ea; --brand: #007aff; --danger: #ff3b30;
+        --radius: 18px; --shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+        --safe-bottom: env(safe-area-inset-bottom, 20px);
+        --safe-top: env(safe-area-inset-top, 20px);
       }
-    };
-    reader.readAsText(file);
-    // 重置 input 讓同一檔案可重複選
-    input.value = ''; 
-  }
-  
-  function clearAllData() {
-    if(confirm('警告：這將會刪除所有紀錄且無法復原！確定嗎？')) {
-      data = [];
-      localStorage.setItem(STORAGE_KEY, JSON.stringify([]));
-      renderUI();
-    }
-  }
-</script>
+      * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+      body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: var(--bg); color: var(--text); height: 100vh; overflow-y: auto; }
+      input, button { font-family: inherit; }
 
-</body>
+      /* Header */
+      header {
+        position: sticky; top: 0; z-index: 100;
+        background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+        border-bottom: 1px solid rgba(0, 0, 0, 0.1); padding: max(12px, var(--safe-top)) 16px 12px;
+      }
+      .head-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+      .app-name { font-size: 24px; font-weight: 800; letter-spacing: -0.5px; }
+      .icon-btn { background: none; border: none; color: var(--brand); font-size: 15px; font-weight: 600; padding: 8px; cursor: pointer; }
+
+      /* Segment Control */
+      .segment { background: #e3e3e8; padding: 2px; border-radius: 10px; display: flex; }
+      .segment button { flex: 1; border: none; background: none; padding: 6px; border-radius: 8px; font-size: 13px; font-weight: 600; color: var(--text); transition: all 0.2s; }
+      .segment button.active { background: #fff; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); }
+
+      /* Main Content */
+      .wrap { max-width: 600px; margin: 0 auto; padding: 16px 16px 100px; }
+
+      /* Stat Cards */
+      .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 24px; }
+      .stat-card { background: var(--card); padding: 16px; border-radius: var(--radius); box-shadow: var(--shadow); display: flex; flex-direction: column; }
+      .stat-label { font-size: 13px; color: var(--sub); font-weight: 600; margin-bottom: 4px; }
+      .stat-val { font-size: 26px; font-weight: 800; letter-spacing: -0.5px; }
+      .stat-unit { font-size: 14px; color: var(--sub); font-weight: 600; margin-left: 2px; }
+
+      /* Section Headers */
+      h2 { font-size: 18px; margin: 24px 4px 12px; font-weight: 700; display: flex; justify-content: space-between; align-items: center; }
+      .link-btn { font-size: 14px; color: var(--brand); font-weight: 500; cursor: pointer; }
+
+      /* List Items */
+      .list { display: flex; flex-direction: column; gap: 12px; }
+      .item { background: var(--card); padding: 16px; border-radius: var(--radius); box-shadow: var(--shadow); display: flex; justify-content: space-between; align-items: center; transition: transform 0.1s; cursor: pointer; }
+      .item:active { transform: scale(0.98); }
+      .item-main { display: flex; flex-direction: column; gap: 4px; }
+      .item-title { font-size: 16px; font-weight: 700; color: #000; }
+      .item-sub { font-size: 13px; color: var(--sub); }
+      .item-right { text-align: right; }
+      .item-price { font-size: 17px; font-weight: 700; color: var(--text); }
+      .item-tag { display: inline-block; background: #f2f2f7; color: var(--sub); font-size: 11px; padding: 2px 6px; border-radius: 6px; margin-top: 4px; font-weight: 600; }
+      
+      .empty-state { text-align: center; padding: 40px 0; color: var(--sub); font-size: 14px; border: 2px dashed #e5e5ea; border-radius: var(--radius); }
+      .loading-state { text-align: center; padding: 20px; color: var(--sub); font-size: 14px; }
+
+      /* FAB */
+      .fab { position: fixed; bottom: max(20px, var(--safe-bottom)); right: 20px; width: 56px; height: 56px; border-radius: 50%; background: var(--text); color: #fff; border: none; font-size: 28px; box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25); display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 90; transition: transform 0.2s; }
+      .fab:active { transform: scale(0.9); }
+
+      /* Modal / Sheet */
+      .overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.4); z-index: 200; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
+      .overlay.show { opacity: 1; pointer-events: auto; }
+      .sheet { position: fixed; bottom: 0; left: 0; right: 0; background: var(--card); border-radius: 24px 24px 0 0; z-index: 201; padding: 20px 20px max(20px, var(--safe-bottom)); transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); max-width: 600px; margin: 0 auto; }
+      .sheet.show { transform: translateY(0); }
+      .sheet-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+      .sheet-title { font-size: 20px; font-weight: 800; }
+      .close-btn { background: #f2f2f7; border: none; width: 32px; height: 32px; border-radius: 50%; color: #888; font-size: 18px; }
+
+      /* Form */
+      .form-group { margin-bottom: 16px; }
+      .form-label { display: block; font-size: 12px; font-weight: 700; color: var(--sub); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+      .form-input { width: 100%; padding: 14px; background: #f2f2f7; border: none; border-radius: 12px; font-size: 16px; color: var(--text); outline: none; }
+      .form-input:focus { background: #e3e3e8; }
+      .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+      .btn-submit { width: 100%; padding: 16px; background: var(--brand); color: #fff; border: none; border-radius: 14px; font-size: 16px; font-weight: 700; margin-top: 10px; cursor: pointer; }
+      .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; }
+      .btn-delete { width: 100%; padding: 14px; background: transparent; color: var(--danger); border: none; font-size: 14px; font-weight: 600; margin-top: 8px; cursor: pointer; }
+
+      /* Chips */
+      .chips { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; margin-bottom: 8px; -webkit-overflow-scrolling: touch; }
+      .chip { white-space: nowrap; padding: 6px 12px; background: #f0f0f5; border: 1px solid #e0e0e5; border-radius: 20px; font-size: 13px; color: var(--text); font-weight: 500; flex-shrink: 0; cursor: pointer; }
+      .chip:active { background: #e0e0eb; }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="head-top">
+        <div class="app-name">☁️ 雲端飲料日記</div>
+        <button class="icon-btn" id="btnSync" onclick="syncData()">🔄 同步</button>
+      </div>
+      <div class="segment">
+        <button class="active" onclick="setRange('week')" id="tab-week">本週</button>
+        <button onclick="setRange('month')" id="tab-month">本月</button>
+        <button onclick="setRange('all')" id="tab-all">全部</button>
+      </div>
+    </header>
+
+    <main class="wrap">
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-label">累積杯數</div>
+          <div class="stat-val"><span id="valCups">0</span><span class="stat-unit">杯</span></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">總花費</div>
+          <div class="stat-val" style="color: var(--brand)" id="valSpend">$0</div>
+        </div>
+      </div>
+
+      <h2>
+        店家排行榜
+        <span class="link-btn" onclick="toggleSort()" id="sortHint">依金額</span>
+      </h2>
+      <div id="listStores" class="list"></div>
+      <div id="emptyStores" class="empty-state" style="display: none">暫無數據</div>
+
+      <h2>近期紀錄</h2>
+      <div id="loadingState" class="loading-state" style="display:none">☁️ 正在連線到 Google Sheet...</div>
+      
+      <div id="listRecords" class="list"></div>
+      <div id="emptyRecords" class="empty-state" style="display: none">點擊右下角 + 開始記錄</div>
+    </main>
+
+    <button class="fab" id="fab">+</button>
+    <div class="overlay" id="overlay"></div>
+    
+    <div class="sheet" id="sheet">
+      <div class="sheet-head">
+        <div class="sheet-title" id="sheetTitle">新增紀錄</div>
+        <button class="close-btn" id="btnClose">×</button>
+      </div>
+
+      <form id="form">
+        <div class="form-group">
+          <label class="form-label">店家</label>
+          <div class="chips" id="storeChips"></div>
+          <input class="form-input" id="inpStore" placeholder="輸入店家名稱 (如: 50嵐)" required autocomplete="off" />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">飲料</label>
+          <div class="chips" id="drinkChips" style="display: none"></div>
+          <input class="form-input" id="inpDrink" placeholder="輸入飲料名稱 (如: 1號)" required autocomplete="off" />
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">價格</label>
+            <input type="number" inputmode="numeric" class="form-input" id="inpPrice" placeholder="$$" required />
+          </div>
+          <div class="form-group">
+            <label class="form-label">日期</label>
+            <input type="date" class="form-input" id="inpDate" required />
+          </div>
+        </div>
+
+        <button type="submit" class="btn-submit" id="btnSubmit">儲存到雲端</button>
+        <button type="button" class="btn-delete" id="btnDelete" style="display: none">刪除此筆</button>
+      </form>
+    </div>
+
+    <script>
+      // ==========================================
+      // 1. 設定與變數
+      // ==========================================
+      // ⚠️ 這是你的 Google Apps Script 網址
+      const API_URL = "https://script.google.com/macros/s/AKfycbyo2Pciqv4E-1_-ra35QhSOyE0GDiadCRx8VVyMT-sXp-QI0thTnd8ENGbXeA2VJ40mxg/exec";
+
+      let data = [];
+      let viewRange = "week"; // week, month, all
+      let sortMode = "spend"; // spend, cups
+      let editId = null; // 用來判斷是新增還是修改
+
+      const $ = (s) => document.querySelector(s);
+      const $$ = (s) => document.querySelectorAll(s);
+
+      // ==========================================
+      // 2. 初始化 & 雲端同步
+      // ==========================================
+      function init() {
+        // 預設今天日期
+        $("#inpDate").valueAsDate = new Date();
+        // 啟動時先抓資料
+        syncData();
+      }
+
+      async function syncData() {
+        // UI 狀態切換
+        $("#loadingState").style.display = "block";
+        $("#listRecords").style.display = "none";
+        $("#listStores").style.display = "none";
+        $("#emptyRecords").style.display = "none";
+        $("#btnSync").innerText = "⏳";
+
+        try {
+          const res = await fetch(API_URL);
+          const rows = await res.json();
+
+          // 資料轉換：[date, store, item, price, id] -> Object
+          data = rows.map((r) => ({
+            date: formatDate(r[0]),
+            store: r[1],
+            drink: r[2],
+            price: Number(r[3]),
+            id: r[4] // Google Sheet 裡的 ID
+          }));
+
+          render(); // 抓完資料後重新渲染畫面
+        } catch (e) {
+          console.error(e);
+          alert("連線失敗，請檢查網路");
+        } finally {
+          $("#loadingState").style.display = "none";
+          $("#listRecords").style.display = "flex";
+          $("#listStores").style.display = "flex";
+          $("#btnSync").innerText = "🔄 同步";
+        }
+      }
+
+      // ==========================================
+      // 3. 資料操作 (CRUD)
+      // ==========================================
+      async function handleSubmit(e) {
+        e.preventDefault();
+        
+        const btn = $("#btnSubmit");
+        const originalText = btn.innerText;
+        btn.disabled = true;
+        btn.innerText = "☁️ 雲端處理中...";
+
+        // 判斷動作
+        const action = editId ? "edit" : "add";
+        // 如果是新增，產生一個隨機 ID
+        const id = editId ? editId : "ID" + Date.now();
+
+        const payload = {
+          action: action,
+          id: id,
+          store: $("#inpStore").value.trim(),
+          item: $("#inpDrink").value.trim(), // 對應 GAS 變數
+          price: $("#inpPrice").value,
+          date: $("#inpDate").value,
+        };
+
+        try {
+          // 傳送給 Google Apps Script
+          await fetch(API_URL, {
+            method: "POST",
+            mode: "no-cors",
+            headers: { "Content-Type": "text/plain" },
+            body: JSON.stringify(payload),
+          });
+
+          // 為了讓使用者覺得很快，我們先在本地假裝更新成功 (樂觀更新)
+          alert(editId ? "修改成功！" : "新增成功！");
+          closeSheet();
+          syncData(); // 再偷偷去背景重新同步一次確保資料正確
+        } catch (e) {
+          alert("上傳失敗：" + e);
+        } finally {
+          btn.disabled = false;
+          btn.innerText = originalText;
+        }
+      }
+
+      async function deleteRecord() {
+        if (!confirm("確定要從雲端刪除這筆紀錄嗎？(無法復原)")) return;
+
+        const btn = $("#btnDelete");
+        btn.innerText = "刪除中...";
+
+        try {
+          await fetch(API_URL, {
+            method: "POST",
+            mode: "no-cors",
+            headers: { "Content-Type": "text/plain" },
+            body: JSON.stringify({ action: "delete", id: editId }),
+          });
+          
+          alert("已刪除");
+          closeSheet();
+          syncData();
+        } catch (e) {
+          alert("刪除失敗");
+        }
+      }
+
+      // ==========================================
+      // 4. 畫面渲染邏輯 (這部分沿用你原本的精美 UI)
+      // ==========================================
+      function render() {
+        const subData = getFilteredData();
+
+        // 1. 統計數字
+        const totalCups = subData.length;
+        const totalSpend = subData.reduce((a, b) => a + Number(b.price), 0);
+        $("#valCups").innerText = totalCups;
+        $("#valSpend").innerText = fmtMoney(totalSpend);
+
+        // 2. 紀錄列表
+        const list = $("#listRecords");
+        list.innerHTML = "";
+        
+        if (subData.length === 0) {
+          $("#emptyRecords").style.display = "block";
+        } else {
+          $("#emptyRecords").style.display = "none";
+          // 排序：日期新的在上面
+          const sorted = [...subData].sort((a, b) => new Date(b.date) - new Date(a.date));
+          
+          sorted.forEach((item) => {
+            const div = document.createElement("div");
+            div.className = "item";
+            div.onclick = () => openSheet(item); // 點擊編輯
+            div.innerHTML = `
+              <div class="item-main">
+                <div class="item-title">${item.store}</div>
+                <div class="item-sub">${item.drink}</div>
+              </div>
+              <div class="item-right">
+                <div class="item-price">${fmtMoney(item.price)}</div>
+                <div class="item-tag">${item.date.slice(5).replace("-", "/")}</div>
+              </div>
+            `;
+            list.appendChild(div);
+          });
+        }
+
+        // 3. 店家排行榜
+        const storeMap = {};
+        subData.forEach((i) => {
+          if (!storeMap[i.store]) storeMap[i.store] = { name: i.store, cups: 0, spend: 0 };
+          storeMap[i.store].cups += 1;
+          storeMap[i.store].spend += Number(i.price);
+        });
+        let stores = Object.values(storeMap);
+
+        // 排序邏輯
+        stores.sort((a, b) => sortMode === "spend" ? b.spend - a.spend : b.cups - a.cups);
+
+        const storeList = $("#listStores");
+        storeList.innerHTML = "";
+        if (stores.length === 0) {
+          $("#emptyStores").style.display = "block";
+        } else {
+          $("#emptyStores").style.display = "none";
+          stores.forEach((s) => {
+            const div = document.createElement("div");
+            div.className = "item";
+            div.style.cursor = "default"; // 排行榜不能點
+            div.innerHTML = `
+              <div class="item-main">
+                <div class="item-title">${s.name}</div>
+                <div class="item-sub">${s.cups} 杯</div>
+              </div>
+              <div class="item-right">
+                <div class="item-price">${fmtMoney(s.spend)}</div>
+              </div>
+            `;
+            storeList.appendChild(div);
+          });
+        }
+      }
+
+      // ==========================================
+      // 5. 輔助功能
+      // ==========================================
+      const fmtMoney = (n) => `$${n}`;
+      
+      const getStartOfWeek = () => {
+        const d = new Date();
+        const day = d.getDay() || 7;
+        d.setHours(0, 0, 0, 0);
+        d.setDate(d.getDate() - day + 1);
+        return d;
+      };
+      
+      const getStartOfMonth = () => {
+        const d = new Date();
+        d.setHours(0, 0, 0, 0);
+        d.setDate(1);
+        return d;
+      };
+
+      function getFilteredData() {
+        const now = new Date();
+        let limit = 0;
+        if (viewRange === "week") limit = getStartOfWeek().getTime();
+        if (viewRange === "month") limit = getStartOfMonth().getTime();
+        return data.filter((d) => new Date(d.date).getTime() >= limit);
+      }
+      
+      function formatDate(dateVal) {
+        if(!dateVal) return "";
+        const d = new Date(dateVal);
+        const offset = d.getTimezoneOffset() * 60000;
+        return (new Date(d - offset)).toISOString().slice(0, 10);
+      }
+
+      function setRange(r) {
+        viewRange = r;
+        $$(".segment button").forEach((b) => b.classList.remove("active"));
+        $(`#tab-${r}`).classList.add("active");
+        render();
+      }
+
+      function toggleSort() {
+        sortMode = sortMode === "spend" ? "cups" : "spend";
+        $("#sortHint").innerText = sortMode === "spend" ? "依金額" : "依杯數";
+        render();
+      }
+
+      // ==========================================
+      // 6. UI 互動 (Sheet & Suggestion)
+      // ==========================================
+      function openSheet(item = null) {
+        $("#overlay").classList.add("show");
+        $("#sheet").classList.add("show");
+
+        renderStoreSuggestions();
+        $("#drinkChips").style.display = "none";
+
+        if (item) {
+          // 編輯模式
+          editId = item.id;
+          $("#sheetTitle").innerText = "編輯紀錄";
+          $("#inpStore").value = item.store;
+          $("#inpDrink").value = item.drink;
+          $("#inpPrice").value = item.price;
+          $("#inpDate").value = item.date;
+          $("#btnSubmit").innerText = "更新紀錄";
+          $("#btnDelete").style.display = "block";
+        } else {
+          // 新增模式
+          editId = null;
+          $("#sheetTitle").innerText = "新增紀錄";
+          $("#inpStore").value = "";
+          $("#inpDrink").value = "";
+          $("#inpPrice").value = "";
+          $("#inpDate").valueAsDate = new Date();
+          $("#btnSubmit").innerText = "儲存到雲端";
+          $("#btnDelete").style.display = "none";
+          $("#inpStore").focus();
+        }
+      }
+
+      function closeSheet() {
+        $("#overlay").classList.remove("show");
+        $("#sheet").classList.remove("show");
+        $("#inpStore").blur();
+      }
+
+      function renderStoreSuggestions() {
+        const count = {};
+        data.forEach((x) => (count[x.store] = (count[x.store] || 0) + 1));
+        const topStores = Object.keys(count).sort((a, b) => count[b] - count[a]).slice(0, 5);
+
+        const box = $("#storeChips");
+        box.innerHTML = "";
+        topStores.forEach((s) => {
+          const chip = document.createElement("div");
+          chip.className = "chip";
+          chip.innerText = s;
+          chip.onclick = () => {
+            $("#inpStore").value = s;
+            renderDrinkSuggestions(s);
+          };
+          box.appendChild(chip);
+        });
+      }
+
+      function renderDrinkSuggestions(storeName) {
+        const drinks = data.filter((x) => x.store === storeName).map((x) => x.drink);
+        const count = {};
+        drinks.forEach((d) => (count[d] = (count[d] || 0) + 1));
+        const topDrinks = Object.keys(count).sort((a, b) => count[b] - count[a]).slice(0, 5);
+
+        const box = $("#drinkChips");
+        if (topDrinks.length > 0) {
+          box.style.display = "flex";
+          box.innerHTML = "";
+          topDrinks.forEach((d) => {
+            const chip = document.createElement("div");
+            chip.className = "chip";
+            chip.innerText = d;
+            chip.onclick = () => {
+              $("#inpDrink").value = d;
+              // 自動帶入上次價格
+              const last = data.find((x) => x.store === storeName && x.drink === d);
+              if (last) $("#inpPrice").value = last.price;
+            };
+            box.appendChild(chip);
+          });
+        } else {
+          box.style.display = "none";
+        }
+      }
+
+      $("#inpStore").addEventListener("blur", (e) => {
+        if (e.target.value) renderDrinkSuggestions(e.target.value);
+      });
+
+      // ==========================================
+      // 7. 事件監聽
+      // ==========================================
+      $("#fab").onclick = () => openSheet();
+      $("#overlay").onclick = closeSheet;
+      $("#btnClose").onclick = closeSheet;
+      $("#form").onsubmit = handleSubmit;
+      $("#btnDelete").onclick = deleteRecord;
+
+      // 啟動！
+      init();
+    </script>
+  </body>
 </html>
 
 
